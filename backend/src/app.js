@@ -1,10 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
-const swaggerOptions = {
-  swaggerOptions: { url: '/api/swagger.json' },
-};
+const getSwaggerSpec = require('./config/swagger');
 
 const studentRoutes = require('./routes/studentRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -19,7 +16,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const swaggerOptions = { swaggerOptions: { url: '/api/swagger.json' } };
+app.get('/api/swagger.json', (req, res) => {
+  const spec = getSwaggerSpec(`${req.protocol}://${req.get('host')}`);
+  res.json(spec);
+});
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'School Management API is running' });
